@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
-var http = require("http").Server(app);
-var io = require("socket.io")(http);
+const http = require("http").Server(app);
+const io = require("socket.io")(http);
 
 //begin listening at port 8089
 http.listen(8089);
@@ -9,8 +9,6 @@ console.log("listening at port 8089......");
 
 //student information
 let studentProfile = [];
-//the message of severity 1
-let allFinalMsg = [];
 
 //teacher information
 let teacherID = null;
@@ -263,7 +261,6 @@ io.on("connection", function (socket) {
       finalMsg.status = review;
       finalMsg.behavior = behavior;
       finalMsg.text = text;
-      allFinalMsg.push(finalMsg);
     } else {
       let target =
         studentProfile[
@@ -290,11 +287,6 @@ io.on("connection", function (socket) {
   socket.on("finished", function () {
     let tmpId = socket.id;
     let allMsg = [];
-    for (let i = 0; i < allFinalMsg.length; i++) {
-      if (allFinalMsg[i].toUser === tmpId) {
-        allMsg.push(allFinalMsg[i]);
-      }
-    }
     let target =
       studentProfile[studentProfile.findIndex(element => element.id === tmpId)]
         .socket;
@@ -375,7 +367,6 @@ io.on("connection", function (socket) {
       finalMsg.status = review;
       finalMsg.behavior = behavior;
       finalMsg.text = text;
-      allFinalMsg.push(finalMsg);
     } else {
       let target =
         studentProfile[
