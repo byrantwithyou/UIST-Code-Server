@@ -251,28 +251,6 @@ io.on("connection", function (socket) {
     }
   });
 
-  //when a student finished his circuit, he receives the reviews of severity 1
-  socket.on("finished", function () {
-    let tmpId = socket.id;
-    let allMsg = [];
-    let target =
-      studentProfile[studentProfile.findIndex(element => element.id === tmpId)]
-        .socket;
-    target.emit("allMsgLeft", allMsg);
-  });
-
-  //a student tries to get his personal log
-  socket.on("getLog", function () {
-    let tmpId = socket.id;
-    let target =
-      studentProfile[studentProfile.findIndex(element => element.id === tmpId)]
-        .socket;
-    let log =
-      studentProfile[studentProfile.findIndex(element => element.id === tmpId)]
-        .log;
-    target.emit("allMsgLeft", log);
-  });
-
   // a student wants to get review from teacher
   socket.on("photoToTeacher", function (img, behavior, severity) {
     let target = teacherSocket;
@@ -357,21 +335,6 @@ io.on("connection", function (socket) {
     }
   });
 
-  //reminder
-  socket.on("reminder", function (studentId, text) {
-    let target =
-      studentProfile[
-        studentProfile.findIndex(element => element.id === studentId)
-      ].socket;
-    target.emit("reminderToStudent", text);
-  });
 
-  //praise
-  socket.on("praise", function (studentId, text) {
-    let target =
-      studentProfile[
-        studentProfile.findIndex(element => element.id === studentId)
-      ].socket;
-    target.emit("praiseToStudent", text);
-  });
+  
 });
