@@ -11,8 +11,8 @@ console.log("listening at port 8089......");
 let studentProfile = [];
 
 //teacher information
-let teacherID = null;
-let teacherSocket = null;
+let teacherID = "";
+
 //Theoretically step number is based on tutorial, but now it is hard coding
 //TODO: stepNumber hard coding
 let stepNumber = 5;
@@ -52,75 +52,43 @@ io.on("connection", function (socket) {
   });
 
   socket.on("authoring", function (subsections, behaviors, settings) {
-    // console.log(subsections);
-    // console.log(behaviors);
-    // console.log(settings);
     subsectionsServer = subsections;
     behaviorsServer = behaviors;
     settingsServer = settings;
   });
   //when a teacher login
   socket.on("teacherLogin", function () {
-    console.log("teacher connected. ID: " + socket.id);
     teacherID = socket.id;
-    teacherSocket = socket;
-    console.log("authoring to teacher:" + subsectionsServer + behaviorsServer);
-    socket.emit(
-      "authoring",
-      subsectionsServer,
-      behaviorsServer,
-      settingsServer
-    );
+    socket.emit("authoring", subsectionsServer, behaviorsServer, settingsServer);
   });
 
   //when a student login
-  socket.on("studentLogin", function () {
+  socket.on("studentLogin", function (studentName) {
     //initialize
     console.log("student connected. ID: " + socket.id);
-    let student = {};
-    student.id = socket.id;
-    student.socket = socket;
-    student.time = new Date().getTime();
-    student.reviewTimes = 0;
-    student.sort = [];
-    student.errorRecord = [];
-    student.log = [];
-    studentProfile.push(student);
+    studentProfile.push({
+      id: socket.id,
+      name: studentName,
+      time: new Date().getTime(),
+      reviewTimes: 0,
+      errorRecord: [],
+      log: []
+    });
     console.log("authoring to student:" + subsectionsServer + behaviorsServer);
-    socket.emit(
-      "authoring",
-      subsectionsServer,
-      behaviorsServer,
-      settingsServer
-    );
+    socket.emit("authoring", subsectionsServer, behaviorsServer, settingsServer);
   });
 
   //when disconnect
   socket.on("disconnect", function () {
-    //if teacher disconnected
-    if (socket.id === teacherID) {
-      console.log("teacher disconnected. ID: " + socket.id);
-      teacherSocket = null;
-      teacherID = null;
+    let deleteStudentIndex = studentProfile.findIndex((element) => element.id == socket.id);
+    if (deleteStudentIndex >= 0) {
+      studentProfile.splice(deleteStudentIndex, 1);
     }
-
-    //if student disconnected
-    else {
-      console.log("disconnected. ID: " + socket.id);
-      let index = studentProfile.findIndex(element => element.id == socket.id);
-      if (index >= 0) {
-        studentProfile.splice(index, 1);
-      }
+    if (socket.id == teacherID) {
+      teacherID = "";
     }
   });
 
-  //when student sends his sorting
-  socket.on("sort", function (sortList) {
-    console.log("Receive the sorting of" + socket.id + ": " + sortList);
-    studentProfile[
-      studentProfile.findIndex(element => element.id === socket.id)
-    ].sort = sortList;
-  });
 
   //add severity
   socket.on("photo", function (img, behavior, severity) {
