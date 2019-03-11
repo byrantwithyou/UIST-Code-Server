@@ -169,6 +169,10 @@ io.on("connection", function (socket) {
     }
   });
 
-
+  socket.on("review2Teacher", function(reviewResultImg, reviewResultBehavior, studentName) {
+    if (teacherID) {
+      io.sockets.connected[studentProfile.find((element) => (element.name == studentName)).id].emit("review2Teacher", reviewResultImg, reviewResultBehavior, studentName);
+    }
+  });
   
 });
