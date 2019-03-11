@@ -68,6 +68,10 @@ io.on("connection", function (socket) {
     if (teacherID) {
       io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
     }
+  });
+
+  socket.on("feedBack2Stu", function(result, behaviorName, studentName) {
+    io.sockets.connected[studentProfile.find((element) => (element.name == studentName)).id].emit("feedBack2Stu", result, behaviorName);
   })
 
 
