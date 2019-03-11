@@ -42,7 +42,9 @@ io.on("connection", function (socket) {
       step: 1
     });
     socket.emit("authoring", behaviorsForAll, stepsForAll, subsectionsForAll, settingsForAll);
-    io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
+    if (teacherID) {
+      io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
+    }
     console.log(studentProfile);
   });
 
@@ -63,7 +65,9 @@ io.on("connection", function (socket) {
   
   socket.on("addStep", function() {
     studentProfile.find((element) => (element.id == socket.id)).step += 1;
-    io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
+    if (teacherID) {
+      io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
+    }
   })
 
 
