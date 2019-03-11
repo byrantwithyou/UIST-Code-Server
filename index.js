@@ -110,6 +110,11 @@ io.on("connection", function (socket) {
 
   socket.on("reviewResult", function(reviewResult, reviewStudentName, reviewBehavior, reviewComment, reviewImg) {
     io.sockets.connected[studentProfile.find((element) => (element.name == reviewStudentName)).id].emit("reviewResult", reviewResult, reviewStudentName, reviewBehavior, reviewComment, reviewImg)
+  });
+  socket.on("teacherFeedback", function(reviewResultImg, reviewResultBehavior, reviewResult, studentName) {
+    if (teacherID) {
+      io.sockets.connected[teacherID].emit("teacherFeedback", reviewResultImg, reviewResultBehavior, reviewResult, studentName);
+    }
   })
 
   // teacher sends back review
