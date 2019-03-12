@@ -52,8 +52,10 @@ io.on("connection", function (socket) {
 
   //when disconnect
   socket.on("disconnect", function () {
-    let deleteStudentIndex = studentProfile.findIndex((element) => element.id == socket.id);
+    let deleteStudentIndex = studentProfile.findIndex((element) => (element.id == socket.id));
+    console.log("dis");
     if (deleteStudentIndex >= 0) {
+      console.log("dis");
       studentProfile.splice(deleteStudentIndex, 1);
       if (teacherID) {
         io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
@@ -66,16 +68,19 @@ io.on("connection", function (socket) {
   });
   
   socket.on("addStep", function() {
-    studentProfile.find((element) => (element.id == socket.id)).step += 1;
+    if (studentProfile.find((element) => (element.id == socket.id))) {
+      studentProfile.find((element) => (element.id == socket.id)).step += 1;
+    }
     if (teacherID) {
       io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
     }
   });
 
   socket.on("feedBack2Stu", function(result, behaviorName, studentName) {
-    if (io.sockets.connected[studentProfile.find((element) => (element.name == studentName)).id]) {
+    if (studentProfile.find((element) => (element.name == studentName))) {
       io.sockets.connected[studentProfile.find((element) => (element.name == studentName)).id].emit("feedBack2Stu", result, behaviorName);
     }
+    
   })
 
 
@@ -119,23 +124,14 @@ io.on("connection", function (socket) {
   });
 
   socket.on("reviewResult", function(reviewResult, reviewStudentName, reviewBehavior, reviewComment, reviewImg) {
-    if (
-      io.sockets.connected[
-        studentProfile.find(element => element.name == reviewStudentName).id
-      ]
-    ) {
-
-      io.sockets.connected[
-        studentProfile.find(element => element.name == reviewStudentName).id
-      ].emit(
-        "reviewResult",
-        reviewResult,
-        reviewStudentName,
-        reviewBehavior,
-        reviewComment,
-        reviewImg
-      );
+    console.log(reviewStudentName);
+    console.log(studentProfile[0].id);
+    
+      console.log(reviewStudentName);
+    if (studentProfile.find((element) => (element.name == reviewStudentName))) {
+      io.sockets.connected[studentProfile.find((element) => (element.name == reviewStudentName)).id].emit("reviewResult", reviewResult, reviewStudentName, reviewBehavior, reviewComment, reviewImg);
     }
+    
   });
   socket.on("teacherFeedback", function(reviewResultImg, reviewResultBehavior, reviewResult, studentName) {
     if (teacherID) {
