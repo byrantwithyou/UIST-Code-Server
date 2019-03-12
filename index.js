@@ -19,7 +19,9 @@ io.on("connection", function (socket) {
   socket.on("sendMobilePhoto", function(img, studentName) {
     const index = studentProfile.findIndex((element) => (element.name == studentName));
     let socketId = studentProfile[index].id;
-    io.sockets.connected[socketId].emit('photo', img, studentName);
+    if (io.sockets.connected[socketId]) {
+      io.sockets.connected[socketId].emit('photo', img, studentName);
+    }
   })
 
   socket.on("authoring", function (behaviors, steps, subsections, settings) {
@@ -71,18 +73,22 @@ io.on("connection", function (socket) {
   });
 
   socket.on("feedBack2Stu", function(result, behaviorName, studentName) {
-    io.sockets.connected[studentProfile.find((element) => (element.name == studentName)).id].emit("feedBack2Stu", result, behaviorName);
+    if (io.sockets.connected[studentProfile.find((element) => (element.name == studentName)).id]) {
+      io.sockets.connected[studentProfile.find((element) => (element.name == studentName)).id].emit("feedBack2Stu", result, behaviorName);
+    }
   })
 
 
   socket.on("photo", function (data, behavior) {
-    //when finished table is 1, the state is "submitted" but not "approved"
+    //when finished table is 1, the state is "submitted" but not "approv
     console.log("photo");
     //target is influenced by reviewTimes, time and random factor
     for (let i = 0; i < studentProfile.length; ++i) {
       let user = studentProfile[i].id;
       if (user != socket.id) {
-        io.sockets.connected[user].emit("photoToJudge", data, behavior);
+        if (io.sockets.connected[user]) {
+          io.sockets.connected[user].emit("photoToJudge", data, behavior);
+        }
         console.log("emitted");
         break;
       }
@@ -113,7 +119,23 @@ io.on("connection", function (socket) {
   });
 
   socket.on("reviewResult", function(reviewResult, reviewStudentName, reviewBehavior, reviewComment, reviewImg) {
-    io.sockets.connected[studentProfile.find((element) => (element.name == reviewStudentName)).id].emit("reviewResult", reviewResult, reviewStudentName, reviewBehavior, reviewComment, reviewImg)
+    if (
+      io.sockets.connected[
+        studentProfile.find(element => element.name == reviewStudentName).id
+      ]
+    ) {
+
+      io.sockets.connected[
+        studentProfile.find(element => element.name == reviewStudentName).id
+      ].emit(
+        "reviewResult",
+        reviewResult,
+        reviewStudentName,
+        reviewBehavior,
+        reviewComment,
+        reviewImg
+      );
+    }
   });
   socket.on("teacherFeedback", function(reviewResultImg, reviewResultBehavior, reviewResult, studentName) {
     if (teacherID) {
