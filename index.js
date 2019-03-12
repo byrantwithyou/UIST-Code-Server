@@ -81,7 +81,9 @@ io.on("connection", function (socket) {
       io.sockets.connected[studentProfile.find((element) => (element.name == studentName)).id].emit("feedBack2Stu", result, behaviorName);
     }
     
-  })
+  });
+
+  
 
 
   socket.on("photo", function (data, behavior) {
@@ -99,6 +101,12 @@ io.on("connection", function (socket) {
       }
     }
   });
+  
+  socket.on("broadcast", function(message) {
+    for (let student of studentProfile) {
+      io.sockets.connected[student.id].emit("broadcast", message);
+    }
+  })
 
   socket.on("review", function (review, img, behavior, toUser, text, severity) {
     
