@@ -16,6 +16,36 @@ let teacherID = "";
 
 
 io.on("connection", function (socket) {
+
+  socket.on("sort", function() {
+    if (teacherID) {
+      io.sockets.connected[teacherID].emit("sort", studentProfile.find((element) => (element.id == socket.id)).name);
+    }
+  });
+
+  socket.on("failureHistory", function(behavior) {
+    if (teacherID) {
+      io.sockets.connected[teacherID].emit("failureHistory", studentProfile.find((element) => (element.id == socket.id)).name, behavior);
+    }
+  })
+
+  socket.on("stepAction", function(behavior) {
+    console.log("run here");
+    if (behavior) {
+      if (studentProfile.find((element) => (element.id == socket.id)).behavior[behavior.name]) {
+        studentProfile.find(element => element.id == socket.id).behavior[behavior.name] += 1;
+      } else {
+        studentProfile.find((element) => (element.id == socket.id)).behavior[behavior.name] = 1;
+      }
+      if (studentProfile.find((element) => (element.id == socket.id))) {
+        io.sockets.connected[socket.id].emit("behaviorProfile", studentProfile.find((element) => (element.id == socket.id)).behavior);
+      }
+    }
+    if (teacherID) {
+      io.sockets.connected[teacherID].emit("stepAction", studentProfile.find((element) => (element.id == socket.id)).name, behavior);
+    }
+  })
+
   socket.on("sendMobilePhoto", function(img, studentName) {
     const index = studentProfile.findIndex((element) => (element.name == studentName));
     let socketId = studentProfile[index].id;
@@ -41,8 +71,10 @@ io.on("connection", function (socket) {
     studentProfile.push({
       id: socket.id,
       name: studentName,
-      step: 1
+      step: 1,
+      behavior: {}
     });
+    
     socket.emit("authoring", behaviorsForAll, stepsForAll, subsectionsForAll, settingsForAll);
     if (teacherID) {
       io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
