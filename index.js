@@ -14,9 +14,23 @@ let subsectionsForAll = [];
 let settingsForAll = [];
 let teacherID = "";
 let styleProfile = [];
+let stepProfile = [];
 
 
 io.on("connection", function (socket) {
+
+  socket.on("stepProfile", function( name, currentSubsection, stepContent ) {
+    stepProfile[stepProfile.findIndex((element) => (element.name == name))] = {
+      id: socket.id,
+      name: name,
+      currentSubsection: currentSubsection,
+      stepContent: stepContent
+    };
+    console.log(stepProfile);
+    if (teacherID) {
+      io.sockets.connected[teacherID].emit("stepProfile", stepProfile);
+    }
+  })
 
   socket.on("styleData", function(data) {
     console.log(data);
@@ -103,11 +117,20 @@ io.on("connection", function (socket) {
         step: 1,
         behavior: {}
       });
-    }
+    };
+    stepProfile.push({
+      id: socket.id,
+      name: studentName,
+      currentSubsection: "",
+      stepContent: ""
+    });
     
     socket.emit("authoring", behaviorsForAll, stepsForAll, subsectionsForAll, settingsForAll);
     if (teacherID) {
       io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
+    }
+    if (teacherID) {
+      io.sockets.connected[teacherID].emit("stepProfile", stepProfile);
     }
     console.log(studentProfile);
   });
@@ -123,6 +146,14 @@ io.on("connection", function (socket) {
         io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
       }
 
+    }
+
+    deleteStudentIndex = stepProfile.findIndex((element) => (element.id == socket.id));
+    if (deleteStudentIndex >= 0) {
+      stepProfile.splice(deleteStudentIndex, 1);
+      if (teacherID) {
+        io.sockets.connected[teacherID].emit("stepProfile", stepProfile);
+      }
     }
     if (socket.id == teacherID) {
       teacherID = "";
