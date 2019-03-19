@@ -81,10 +81,29 @@ io.on("connection", function (socket) {
     }
   })
 
+  socket.on("pr", function(studentName) {
+    const index = studentProfile.findIndex(element => element.name == studentName);
+    console.log("pr" + studentName);
+    console.log(index);
+    if (index >= 0) {
+      let ss = studentProfile[index].id;
+      if (io.sockets.connected[ss]) {
+        io.sockets.connected[ss].emit("pr");
+        console.log("emit to student pr");
+        console.log(ss);
+      }
+    }
+    
+  })
+
   socket.on("sendMobilePhoto", function(img, studentName) {
     const index = studentProfile.findIndex((element) => (element.name == studentName));
     console.log(index);
     console.log(studentName);
+    if (teacherID) {
+      console.log("sent to teacher");
+      io.sockets.connected[teacherID].emit("studentView", img, studentName);
+    }
     let socketId = "";
     if (index >= 0) {
       socketId = studentProfile[index].id;
