@@ -52,11 +52,6 @@ io.on("connection", function (socket) {
     
   })
 
-  socket.on("sort", function() {
-    if (teacherID) {
-      io.sockets.connected[teacherID].emit("sort", studentProfile.find((element) => (element.id == socket.id)).name);
-    }
-  });
 
   socket.on("failureHistory", function(behavior) {
     if (teacherID) {
@@ -137,6 +132,7 @@ io.on("connection", function (socket) {
         behavior: {}
       });
     };
+    console.log(studentProfile.length);
     stepProfile.push({
       id: socket.id,
       name: studentName,
@@ -158,9 +154,11 @@ io.on("connection", function (socket) {
   socket.on("disconnect", function () {
     let deleteStudentIndex = studentProfile.findIndex((element) => (element.id == socket.id));
     console.log("dis");
+    console.log(studentProfile.length);
     if (deleteStudentIndex >= 0) {
-      console.log("dis");
+      console.log("student dis");
       studentProfile.splice(deleteStudentIndex, 1);
+      console.log(studentProfile.length);
       if (teacherID) {
         io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
       }
