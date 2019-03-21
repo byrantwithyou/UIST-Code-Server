@@ -30,6 +30,16 @@ io.on("connection", function (socket) {
     if (teacherID) {
       io.sockets.connected[teacherID].emit("stepProfile", stepProfile);
     }
+  });
+  
+  socket.on("sendFeedback", function(comment, name) {
+    const index = studentProfile.findIndex((element) => (element.name == name));
+    if (index >= 0) {
+      if (io.sockets.connected[studentProfile[index].id]) {
+        io.sockets.connected[studentProfile[index].id].emit("sendFeedback", comment);
+        console.log("send again");
+      }
+    }
   })
 
   socket.on("styleData", function(data) {
