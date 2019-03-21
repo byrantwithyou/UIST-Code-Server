@@ -42,22 +42,25 @@ io.on("connection", function (socket) {
     }
   })
 
-  socket.on("styleData", function(data) {
-    console.log(data);
-    let find = false;
-    for (let profile of styleProfile) {
-      if ( (profile.style == data.style) && (profile.name == data.name)) {
-        profile.reviewResult = data.reviewResult;
-        find = true;
-        break;
-      }
-    }
-    if (!find) {
-      find = false;
-      styleProfile.push(data);
-    }
+  socket.on("styleData", function(style, name, result) {
+    // console.log(data);
+    // let find = false;
+    // for (let profile of styleProfile) {
+    //   if ( (profile.style == data.style) && (profile.name == data.name)) {
+    //     profile.reviewResult = data.reviewResult;
+    //     find = true;
+    //     break;
+    //   }
+    // }
+    // if (!find) {
+    //   find = false;
+    //   styleProfile.push(data);
+    // }
+    
     if (teacherID) {
-      io.sockets.connected[teacherID].emit("styleData", styleProfile);
+      console.log(result);
+      console.log("send to style log");
+      io.sockets.connected[teacherID].emit("styleLog", style, name, result);
     }
     
   })
@@ -259,6 +262,10 @@ io.on("connection", function (socket) {
       console.log(reviewStudentName);
     if (studentProfile.find((element) => (element.name == reviewStudentName))) {
       io.sockets.connected[studentProfile.find((element) => (element.name == reviewStudentName)).id].emit("reviewResult", reviewResult, reviewStudentName, reviewBehavior, reviewComment, reviewImg);
+    }
+
+    if ( teacherID ) {
+      io.sockets.connected[teacherID].emit("styleLog", reviewBehavior.name, reviewStudentName, reviewResult);
     }
     
   });
