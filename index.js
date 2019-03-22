@@ -145,7 +145,9 @@ io.on("connection", function (socket) {
         name: studentName,
         step: 1,
         behavior: {},
-        online: true
+        online: true,
+        stepContent: subsectionsForAll[0].steps[0],
+        currentSection: 1
       });
     } 
     stepProfile.push({
@@ -164,6 +166,9 @@ io.on("connection", function (socket) {
     }
     if ( teacherID && io.sockets.connected[teacherID]) {
       io.sockets.connected[teacherID].emit("studentLogin", studentName);
+    }
+    if (teacherID && io.sockets.connected[teacherID]) {
+      io.sockets.connected[teacherID].emit("studentStepProfile", studentProfile);
     }
   });
 
@@ -191,12 +196,14 @@ io.on("connection", function (socket) {
     }
   });
   
-  socket.on("addStep", function() {
-    if (studentProfile.find((element) => (element.id == socket.id))) {
-      studentProfile.find((element) => (element.id == socket.id)).step += 1;
+  socket.on("addStep", function(name, section, step) {
+    if (studentProfile.find((element) => (element.name == name))) {
+      studentProfile.find((element) => (element.name == name)).step += 1;
+      studentProfile.find((element) => (element.name == name)).stepContent = step;
+      studentProfile.find((element) => (element.name == name)).currentSection = section;
     }
     if (teacherID && io.sockets.connected[teacherID]) {
-      io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
+      io.sockets.connected[teacherID].emit("studentStepProfile", studentProfile);
     }
   });
 
@@ -215,15 +222,16 @@ io.on("connection", function (socket) {
     //when finished table is 1, the state is "submitted" but not "approv
     //target is influenced by reviewTimes, time and random factor
     console.log(studentProfile.length);
-    for (let i = 0; i < studentProfile.length; ++i) {
-      let user = studentProfile[i].id;
-      if (user != socket.id) {
-        if (io.sockets.connected[user]) {
-          console.log("emitted to the reviewing reviewing student");
-          io.sockets.connected[user].emit("photoToJudge", data, behavior);
-        }
-        break;
-      }
+    let random = JSON.parse(JSON.stringify(studentProfile));
+    random.splice(random.findIndex((element) => (element.id == socket.id)), 1);
+    let ra = 0;
+    if (random.length > 0) {
+      ra = Math.floor(Math.random() * (random.length - 1))
+    }
+    if (io.sockets.connected[random[ra].id]) {
+      console.log("emitted to the reviewing reviewing student");
+      io.sockets.connected[user].emit("photoToJudge", data, behavior);
+
     }
   });
   
