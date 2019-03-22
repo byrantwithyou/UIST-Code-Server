@@ -4,7 +4,8 @@ const http = require("http").Server(app);
 const io = require("socket.io")(http);
 
 //begin listening at port 8089
-http.listen(8089);
+const port = process.env.PORT || 8089;
+http.listen(port);
 console.log("listening at port 8089......");
 
 let studentProfile = [];
@@ -68,31 +69,31 @@ io.on("connection", function (socket) {
     }
   })
 
-  socket.on("stepAction", function(behavior) {
-    if (behavior) {
-      if (studentProfile.find((element) => (element.id == socket.id)).behavior[behavior.name]) {
-        studentProfile.find(element => element.id == socket.id).behavior[behavior.name] += 1;
-      } else {
-        studentProfile.find((element) => (element.id == socket.id)).behavior[behavior.name] = 1;
-      }
-      if (
-        studentProfile.find(element => element.id == socket.id) &&
-        studentProfile.find(element => element.id == socket.id).online
-      ) {
-        io.sockets.connected[socket.id].emit(
-          "behaviorProfile",
-          studentProfile.find(element => element.id == socket.id).behavior
-        );
-      }
-    }
-    if (teacherID && io.sockets.connected[teacherID]) {
-      io.sockets.connected[teacherID].emit(
-        "stepAction",
-        studentProfile.find(element => element.id == socket.id).name,
-        behavior
-      );
-    }
-  })
+  // socket.on("stepAction", function(behavior) {
+  //   if (behavior) {
+  //     if (studentProfile.find((element) => (element.id == socket.id)).behavior[behavior.name]) {
+  //       studentProfile.find(element => element.id == socket.id).behavior[behavior.name] += 1;
+  //     } else {
+  //       studentProfile.find((element) => (element.id == socket.id)).behavior[behavior.name] = 1;
+  //     }
+  //     if (
+  //       studentProfile.find(element => element.id == socket.id) &&
+  //       studentProfile.find(element => element.id == socket.id).online
+  //     ) {
+  //       io.sockets.connected[socket.id].emit(
+  //         "behaviorProfile",
+  //         studentProfile.find(element => element.id == socket.id).behavior
+  //       );
+  //     }
+  //   }
+  //   if (teacherID && io.sockets.connected[teacherID]) {
+  //     io.sockets.connected[teacherID].emit(
+  //       "stepAction",
+  //       studentProfile.find(element => element.id == socket.id).name,
+  //       behavior
+  //     );
+  //   }
+  // })
 
   socket.on("pr", function(studentName) {
     const index = studentProfile.findIndex(element => element.name == studentName);
@@ -230,7 +231,7 @@ io.on("connection", function (socket) {
     }
     if (io.sockets.connected[random[ra].id]) {
       console.log("emitted to the reviewing reviewing student");
-      io.sockets.connected[user].emit("photoToJudge", data, behavior);
+      io.sockets.connected[random[ra].id].emit("photoToJudge", data, behavior);
 
     }
   });
