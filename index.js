@@ -26,7 +26,7 @@ io.on("connection", function (socket) {
       currentSubsection: currentSubsection,
       stepContent: stepContent
     };
-    if (teacherID) {
+    if (teacherID && io.sockets.connected[teacherID]) {
       io.sockets.connected[teacherID].emit("stepProfile", stepProfile);
     }
   });
@@ -173,7 +173,7 @@ io.on("connection", function (socket) {
     if (deleteStudentIndex >= 0) {
       studentProfile[deleteStudentIndex].online = false;
       //studentProfile.splice(deleteStudentIndex, 1);
-      if (teacherID) {
+      if (teacherID && io.sockets.connected[teacherID]) {
         io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
       }
 
@@ -182,7 +182,7 @@ io.on("connection", function (socket) {
     deleteStudentIndex = stepProfile.findIndex((element) => (element.id == socket.id));
     if (deleteStudentIndex >= 0) {
       stepProfile.splice(deleteStudentIndex, 1);
-      if (teacherID) {
+      if (teacherID && io.sockets.connected[teacherID]) {
         io.sockets.connected[teacherID].emit("stepProfile", stepProfile);
       }
     }
@@ -263,13 +263,13 @@ io.on("connection", function (socket) {
       }
     }
 
-    if ( teacherID ) {
+    if ( teacherID && io.sockets.connected[teacherID] ) {
       io.sockets.connected[teacherID].emit("styleLog", reviewBehavior.name, reviewStudentName, reviewResult);
     }
     
   });
   socket.on("teacherFeedback", function(reviewResultImg, reviewResultBehavior, reviewResult, studentName) {
-    if (teacherID) {
+    if (teacherID && io.sockets.connected[teacherID]) {
       io.sockets.connected[teacherID].emit("teacherFeedback", reviewResultImg, reviewResultBehavior, reviewResult, studentName);
     }
   })
@@ -323,7 +323,7 @@ io.on("connection", function (socket) {
   });
 
   socket.on("review2Teacher", function(reviewResultImg, reviewResultBehavior, studentName) {
-    if (teacherID) {
+    if (teacherID && io.sockets.connected[teacherID]) {
       io.sockets.connected[teacherID].emit("review2Teacher", reviewResultImg, reviewResultBehavior, studentName);
     }
   });
