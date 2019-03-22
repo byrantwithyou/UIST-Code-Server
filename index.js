@@ -34,7 +34,7 @@ io.on("connection", function (socket) {
   socket.on("sendFeedback", function(comment, name) {
     const index = studentProfile.findIndex((element) => (element.name == name));
     if (index >= 0) {
-      if (io.sockets.connected[studentProfile[index].id]) {
+      if (io.sockets.connected[studentProfile[index].id] && studentProfile[index].online) {
         io.sockets.connected[studentProfile[index].id].emit("sendFeedback", comment);
       }
     }
@@ -55,7 +55,7 @@ io.on("connection", function (socket) {
     //   styleProfile.push(data);
     // }
     
-    if (teacherID) {
+    if (teacherID && io.sockets.connected[teacherID]) {
       io.sockets.connected[teacherID].emit("styleLog", style, name, result);
     }
     
@@ -63,7 +63,7 @@ io.on("connection", function (socket) {
 
 
   socket.on("failureHistory", function(behavior) {
-    if (teacherID) {
+    if (teacherID && io.sockets.connected[teacherID]) {
       io.sockets.connected[teacherID].emit("failureHistory", studentProfile.find((element) => (element.id == socket.id)).name, behavior);
     }
   })
@@ -75,12 +75,22 @@ io.on("connection", function (socket) {
       } else {
         studentProfile.find((element) => (element.id == socket.id)).behavior[behavior.name] = 1;
       }
-      if (studentProfile.find((element) => (element.id == socket.id))) {
-        io.sockets.connected[socket.id].emit("behaviorProfile", studentProfile.find((element) => (element.id == socket.id)).behavior);
+      if (
+        studentProfile.find(element => element.id == socket.id) &&
+        studentProfile.find(element => element.id == socket.id).online
+      ) {
+        io.sockets.connected[socket.id].emit(
+          "behaviorProfile",
+          studentProfile.find(element => element.id == socket.id).behavior
+        );
       }
     }
-    if (teacherID) {
-      io.sockets.connected[teacherID].emit("stepAction", studentProfile.find((element) => (element.id == socket.id)).name, behavior);
+    if (teacherID && io.sockets.connected[teacherID]) {
+      io.sockets.connected[teacherID].emit(
+        "stepAction",
+        studentProfile.find(element => element.id == socket.id).name,
+        behavior
+      );
     }
   })
 
@@ -88,7 +98,7 @@ io.on("connection", function (socket) {
     const index = studentProfile.findIndex(element => element.name == studentName);
     if (index >= 0) {
       let ss = studentProfile[index].id;
-      if (io.sockets.connected[ss]) {
+      if (io.sockets.connected[ss] && studentProfile[index].online) {
         io.sockets.connected[ss].emit("pr");
       }
     }
@@ -97,7 +107,7 @@ io.on("connection", function (socket) {
 
   socket.on("sendMobilePhoto", function(img, studentName) {
     const index = studentProfile.findIndex((element) => (element.name == studentName));
-    if (teacherID) {
+    if (teacherID && io.sockets.connected[teacherID]) {
       io.sockets.connected[teacherID].emit("studentView", img, studentName);
     }
     let socketId = "";
@@ -134,9 +144,10 @@ io.on("connection", function (socket) {
         id: socket.id,
         name: studentName,
         step: 1,
-        behavior: {}
+        behavior: {},
+        online: true
       });
-    };
+    } 
     stepProfile.push({
       id: socket.id,
       name: studentName,
@@ -144,14 +155,14 @@ io.on("connection", function (socket) {
       stepContent: ""
     });
     
-    socket.emit("authoring", behaviorsForAll, stepsForAll, subsectionsForAll, settingsForAll);
-    if (teacherID) {
+    socket.emit("authoring", behaviorsForAll, stepsForAll, subsectionsForAll, settingsForAll, studentProfile.find((element) => (element.name)).step);
+    if (teacherID && io.sockets.connected[teacherID]) {
       io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
     }
-    if (teacherID) {
+    if (teacherID && io.sockets.connected[teacherID]) {
       io.sockets.connected[teacherID].emit("stepProfile", stepProfile);
     }
-    if ( teacherID ) {
+    if ( teacherID && io.sockets.connected[teacherID]) {
       io.sockets.connected[teacherID].emit("studentLogin", studentName);
     }
   });
@@ -160,7 +171,8 @@ io.on("connection", function (socket) {
   socket.on("disconnect", function () {
     let deleteStudentIndex = studentProfile.findIndex((element) => (element.id == socket.id));
     if (deleteStudentIndex >= 0) {
-      studentProfile.splice(deleteStudentIndex, 1);
+      studentProfile[deleteStudentIndex].online = false;
+      //studentProfile.splice(deleteStudentIndex, 1);
       if (teacherID) {
         io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
       }
@@ -183,7 +195,7 @@ io.on("connection", function (socket) {
     if (studentProfile.find((element) => (element.id == socket.id))) {
       studentProfile.find((element) => (element.id == socket.id)).step += 1;
     }
-    if (teacherID) {
+    if (teacherID && io.sockets.connected[teacherID]) {
       io.sockets.connected[teacherID].emit("studentProfile", studentProfile.map((element) => ([element.name, element.step])));
     }
   });
@@ -246,7 +258,9 @@ io.on("connection", function (socket) {
     //console.log(studentProfile[0].id);
     
     if (studentProfile.find((element) => (element.name == reviewStudentName))) {
-      io.sockets.connected[studentProfile.find((element) => (element.name == reviewStudentName)).id].emit("reviewResult", reviewResult, reviewStudentName, reviewBehavior, reviewComment, reviewImg);
+      if (io.sockets.connected[studentProfile.find((element) => (element.name == reviewStudentName)).id]) {
+        io.sockets.connected[studentProfile.find((element) => (element.name == reviewStudentName)).id].emit("reviewResult", reviewResult, reviewStudentName, reviewBehavior, reviewComment, reviewImg);
+      }
     }
 
     if ( teacherID ) {
