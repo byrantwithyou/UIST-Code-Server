@@ -161,6 +161,9 @@ io.on("connection", function (socket) {
       io.sockets.connected[teacherID].emit("stepProfile", stepProfile);
     }
     console.log(studentProfile);
+    if ( teacherID ) {
+      io.sockets.connected[teacherID].emit("studentLogin", studentName);
+    }
   });
 
   //when disconnect
